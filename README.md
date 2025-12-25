@@ -8,6 +8,7 @@ A command line parser that leverages System.CommandLine and binds the parsed opt
   * Used ".NET: New Project" from the search bar.
 * Leveraging **Github Copilot** for code generation and changes.
   * One thing it has trouble with is cleaning up **ALL** unused `using` statements.
+* **Requires .NET 10 SDK.** A `global.json` file is included to pin the SDK for contributors; install .NET 10 locally or via your package manager: https://dotnet.microsoft.com/download
 
 > **Markdown style:** Use `*` for unordered list markers and `~~~` (tilde fences) for fenced code blocks. These are enforced by `.markdownlint.json` (MD004: `asterisk`, MD048: `tilde`).
 
