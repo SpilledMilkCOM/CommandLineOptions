@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore
+        run: dotnet restore ConsoleAppHost.sln
+
+      - name: Build
+        run: dotnet build ConsoleAppHost.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test ConsoleAppHost.sln --no-build --configuration Release --verbosity normal
+
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format --version 6.*
+
+      - name: Verify code format
+        env:
+          PATH: ${{ env.PATH }}:${{ runner.tool_cache }}/dotnet/tools
+        run: dotnet format --verify-no-changes --severity error
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint CLI
+        run: npm install -g markdownlint-cli@0.32.0
+
+      - name: Run markdownlint
+        run: markdownlint -c .markdownlint.json "**/*.md"
