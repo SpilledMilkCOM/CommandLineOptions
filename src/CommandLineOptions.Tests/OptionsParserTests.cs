@@ -38,7 +38,7 @@ namespace CommandLineOptions.Tests
         {
             var args = new[] { "--color", "Blue" };
             var s = OptionsParser.Parse<TestSimpleSettings>(args);
-            Assert.AreEqual(TestSimpleSettings.TestEnum.Blue, s.Color);
+            Assert.AreEqual(TestEnum.Blue, s.Color);
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", s.Name);
             Assert.IsFalse(s.Enabled);
             Assert.AreEqual(0, s.Count);
-            Assert.AreEqual(TestSimpleSettings.TestEnum.Red, s.Color);
+            Assert.AreEqual(TestEnum.Red, s.Color);
         }
 
         [TestMethod]

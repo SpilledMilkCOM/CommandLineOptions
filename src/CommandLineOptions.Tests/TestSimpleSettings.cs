@@ -8,7 +8,5 @@ namespace CommandLineOptions.Tests
         public bool Enabled { get; set; }
         public int Count { get; set; }
         public TestEnum Color { get; set; } = TestEnum.Red;
-
-        public enum TestEnum { Red, Blue }
     }
-}
+} 
