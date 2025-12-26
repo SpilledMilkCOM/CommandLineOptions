@@ -1,6 +1,8 @@
 using System.CommandLine;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CommandLineOptions
 {
@@ -8,26 +10,26 @@ namespace CommandLineOptions
     /// Builds System.CommandLine options from a POCO settings class and binds parsed args back into an instance.
     /// Supports string, bool, numeric primitives and enum (nullable variants too).
     /// </summary>
-    public static class OptionsParser
+    public class OptionsParser
     {
+        private readonly ILogger<OptionsParser> _logger;
+
+        public OptionsParser(ILogger<OptionsParser>? logger = null)
+        {
+            _logger = logger ?? NullLogger<OptionsParser>.Instance;
+        }
+
         /// <summary>
         /// Build a RootCommand that exposes options for each public, instance property on <typeparamref name="TSettings"/>.
         /// Option names are kebab-cased from property names (e.g. "MyProperty" -> "--my-property").
         /// </summary>
-        public static RootCommand BuildRootCommand<TSettings>() where TSettings : new()
+        public RootCommand BuildRootCommand<TSettings>() where TSettings : new()
         {
             var root = new RootCommand();
 
-            foreach (var prop in typeof(TSettings).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var descriptor in CreateOptionDescriptors(typeof(TSettings)))
             {
-                if (!prop.CanRead || !prop.CanWrite)
-                {
-                    continue; // only bind read/write properties
-                }
-
-                var alias = "--" + ToKebabCase(prop.Name);
-                var option = CreateOptionForProperty(prop, alias);
-                root.Add(option);
+                root.Add(descriptor.Option);
             }
 
             return root;
@@ -36,111 +38,99 @@ namespace CommandLineOptions
         /// <summary>
         /// Parse args into a new instance of <typeparamref name="TSettings"/>.
         /// </summary>
-        public static TSettings Parse<TSettings>(string[] args) where TSettings : new()
+        public TSettings Parse<TSettings>(string[] args) where TSettings : new()
         {
-            var root = BuildRootCommand<TSettings>();
-            var result = root.Parse(args);
+            var descriptors = CreateOptionDescriptors(typeof(TSettings));
+            var root = new RootCommand();
+
+            foreach (var descriptor in descriptors)
+            {
+                root.Add(descriptor.Option);
+            }
 
             var instance = new TSettings();
+            var parseResult = root.Parse(args);
 
-            foreach (var prop in typeof(TSettings).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var descriptor in descriptors)
             {
-                if (!prop.CanWrite)
-                {
-                    continue;
-                }
+                var result = parseResult.GetResult(descriptor.Option);
 
-                var alias = "--" + ToKebabCase(prop.Name);
-                var option = root.Options.FirstOrDefault(o => o.Aliases.Contains(alias, StringComparer.Ordinal));
-                if (option is null)
+                if (result is not null)
                 {
-                    continue;
-                }
+                    // An option was provided for this property.
 
-                var value = GetValueForOption(result, option);
-                if (value is null)
-                {
-                    continue;
-                }
+                    var parsed = Convert.ChangeType(result.GetValueOrDefault<object>(), descriptor.ValueType, CultureInfo.InvariantCulture);
 
-                var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-
-                if (targetType.IsEnum)
-                {
-                    var enumVal = Enum.Parse(targetType, value.ToString()!, true);
-                    prop.SetValue(instance, enumVal);
-                }
-                else
-                {
-                    var converted = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-                    prop.SetValue(instance, converted);
+                    descriptor.Prop.SetValue(instance, parsed);
                 }
             }
 
             return instance;
         }
 
-        //----==== PRIVATE ====------------------------------------------------------------------------
+        //----==== PRIVATE ====--------------------------------------------------------------------
 
-        private static Option CreateOptionForProperty(PropertyInfo prop, string alias)
+        private List<OptionDescriptor> CreateOptionDescriptors(Type settingsType)
         {
-            var propType = prop.PropertyType;
-            var underlying = Nullable.GetUnderlyingType(propType) ?? propType;
+            var list = new List<OptionDescriptor>();
 
-            if (underlying == typeof(bool))
+            foreach (var prop in settingsType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                return new Option<bool>(alias);
+                if (!prop.CanRead || !prop.CanWrite)
+                {
+                    continue;
+                }
+
+                var valueType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                var kebab = ToKebabCase(prop.Name);
+                var option = CreateOptionForType(valueType, kebab);
+
+                option.Aliases.Add(kebab);
+
+                list.Add(new OptionDescriptor(prop, option, valueType));
             }
 
-            if (underlying == typeof(string))
-            {
-                return new Option<string>(alias);
-            }
+            _logger.LogDebug("CreateOptionDescriptors<{Type}>: {Count} options", settingsType.FullName, list.Count);
 
-            if (underlying == typeof(int))
-            {
-                return new Option<int>(alias);
-            }
-
-            if (underlying == typeof(long))
-            {
-                return new Option<long>(alias);
-            }
-
-            if (underlying == typeof(double))
-            {
-                return new Option<double>(alias);
-            }
-
-            if (underlying.IsEnum)
-            {
-                // Create Option<EnumType> via reflection
-                var optionType = typeof(Option<>).MakeGenericType(underlying);
-                return (Option)Activator.CreateInstance(optionType, new object[] { alias })!;
-            }
-
-            // Fallback to string option.
-            return new Option<string>(alias);
+            return list;
         }
 
-        private static object? GetValueForOption(ParseResult result, Option option)
+        private Option CreateOptionForType(Type valueType, string kebabName)
         {
-            var optionType = option.GetType();
-            if (!optionType.IsGenericType)
+            var primary = "--" + kebabName;
+            if (valueType.IsEnum)
             {
-                return null;
+                var optionType = typeof(Option<>).MakeGenericType(valueType);
+                return (Option)Activator.CreateInstance(optionType, new object[] { primary })!;
             }
 
-            var genericArg = optionType.GetGenericArguments()[0];
-            var method = typeof(ParseResult).GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => m.Name == "GetValueForOption" && m.IsGenericMethod && m.GetGenericArguments().Length == 1);
-
-            if (method is null)
+            if (valueType == typeof(bool))
             {
-                return null;
+                return new Option<bool>(primary);
             }
-            var generic = method.MakeGenericMethod(genericArg);
-            return generic.Invoke(result, new object[] { option });
+
+            if (valueType == typeof(string))
+            {
+                return new Option<string>(primary);
+            }
+
+            if (valueType == typeof(int))
+            {
+                return new Option<int>(primary);
+            }
+
+            if (valueType == typeof(long))
+            {
+                return new Option<long>(primary);
+            }
+
+            if (valueType == typeof(double))
+            {
+                return new Option<double>(primary);
+            }
+
+            // Fallback: bind as string.
+            return new Option<string>(primary);
         }
 
         private static string ToKebabCase(string name)
