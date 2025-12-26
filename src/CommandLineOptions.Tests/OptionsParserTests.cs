@@ -17,6 +17,10 @@ namespace CommandLineOptions.Tests
             var actual = parser.Parse<TestSimpleSettings>(args);
 
             Assert.AreEqual("Bob", actual.Name);
+            // Defaults are preseved
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual(0, actual.Percent);
         }
 
         [TestMethod]
@@ -28,6 +32,10 @@ namespace CommandLineOptions.Tests
             var actual = test.Parse<TestSimpleSettings>(args);
 
             Assert.IsTrue(actual.Enabled);
+            // Defaults are preseved
+            Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual("Default", actual.Name);
+            Assert.AreEqual(0, actual.Percent);
         }
 
         [TestMethod]
@@ -39,6 +47,10 @@ namespace CommandLineOptions.Tests
             var actual = test.Parse<TestSimpleSettings>(args);
 
             Assert.AreEqual(42, actual.Count);
+            // Defaults are preseved
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual("Default", actual.Name);
+            Assert.AreEqual(0, actual.Percent);
         }
 
         [TestMethod]
@@ -50,6 +62,10 @@ namespace CommandLineOptions.Tests
             var actual = test.Parse<TestSimpleSettings>(args);
 
             Assert.AreEqual(95.5, actual.Percent);
+            // Defaults are preseved
+            Assert.AreEqual(0, actual.Count);
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual("Default", actual.Name);
         }
 
         // [TestMethod]
@@ -73,6 +89,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.IsFalse(actual.Enabled);
             Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual(0, actual.Percent);
             // Assert.AreEqual(TestEnum.Red, actual.Color);
         }
 
@@ -83,7 +100,7 @@ namespace CommandLineOptions.Tests
             var root = parser.BuildRootCommand<TestSimpleSettings>();
 
             Console.WriteLine("RootCommand methods: " + string.Join(',', typeof(RootCommand).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(m => m.Name).Distinct()));
-           
+
             var optionsList = root.Children.OfType<Option>().ToList();
             var aliases = optionsList.SelectMany(o => o.Aliases).ToArray();
 
@@ -110,7 +127,7 @@ namespace CommandLineOptions.Tests
         }
 
         //----==== PRIVATE ====--------------------------------------------------------------------
-        
+
         private OptionsParser ConstructTestObject() => new OptionsParser(NullLogger<OptionsParser>.Instance);
     }
 }
