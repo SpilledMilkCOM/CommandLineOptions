@@ -41,6 +41,17 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(42, actual.Count);
         }
 
+        [TestMethod]
+        public void OptionsParser_Parse_SetsDoubleProperty()
+        {
+            var args = new[] { "--percent", "95.5" };
+            var test = ConstructTestObject();
+
+            var actual = test.Parse<TestSimpleSettings>(args);
+
+            Assert.AreEqual(95.5, actual.Percent);
+        }
+
         // [TestMethod]
         // public void OptionsParser_Parse_SetsEnumProperty()
         // {
@@ -86,6 +97,7 @@ namespace CommandLineOptions.Tests
             Assert.IsTrue(aliases.Contains("--name") || aliases.Contains("name"), $"Missing --name, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--enabled") || aliases.Contains("enabled"), $"Missing --enabled, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--count") || aliases.Contains("count"), $"Missing --count, actual aliases: {aliasList}");
+            Assert.IsTrue(aliases.Contains("--percent") || aliases.Contains("percent"), $"Missing --percent, actual aliases: {aliasList}");
             // Assert.IsTrue(aliases.Contains("--color") || aliases.Contains("color"), $"Missing --color, actual aliases: {aliasList}");
         }
 
@@ -94,7 +106,7 @@ namespace CommandLineOptions.Tests
         {
             var props = typeof(TestSimpleSettings).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
-            Assert.AreEqual(3, props.Length, "Expected 3 public instance properties on TestSimpleSettings.");
+            Assert.AreEqual(4, props.Length, "Expected 4 public instance properties on TestSimpleSettings.");
         }
 
         //----==== PRIVATE ====--------------------------------------------------------------------

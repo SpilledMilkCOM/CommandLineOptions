@@ -6,5 +6,6 @@ namespace CommandLineOptions.Tests
         // public TestEnum Color { get; set; } = TestEnum.Red;
         public int Count { get; set; }
         public string? Name { get; set; } = "Default";
+        public double Percent { get; set; }
     }
 }

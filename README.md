@@ -1,6 +1,6 @@
 # ⚙️ Command Line Options
 
-A command line parser that leverages System.CommandLine and binds the parsed options to an IOptions settings class.
+A command line parser that leverages Microsoft's **System.CommandLine** and binds the parsed options to an `IOptions` settings class.
 
 # 🛠️ Setup
 
@@ -15,10 +15,6 @@ A command line parser that leverages System.CommandLine and binds the parsed opt
 
 # 📝 TODO
 
-* Create command line program project
-  * Create settings class
-* Create command line parsing project
-
 ## ✅ CI Checklist
 
 These CI-related tasks are tracked here for visibility and can be used as a quick checklist for reviewers:
@@ -28,7 +24,7 @@ These CI-related tasks are tracked here for visibility and can be used as a quic
 * [ ] Add status badge to README
 * [ ] Close issue and document CI details
 
-## 🔧 Running the ConsoleAppHost
+# 🔧 Running the ConsoleAppHost
 
 You can run the console host with configuration coming from `appsettings.json`, environment variables, and command-line arguments. Examples:
 
