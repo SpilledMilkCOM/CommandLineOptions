@@ -1,6 +1,8 @@
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -14,6 +16,7 @@ namespace CommandLineOptions
     {
         private readonly ILogger<OptionsParser> _logger;
 
+        [ExcludeFromCodeCoverage]
         public OptionsParser(ILogger<OptionsParser>? logger = null)
         {
             _logger = logger ?? NullLogger<OptionsParser>.Instance;
@@ -140,28 +143,28 @@ namespace CommandLineOptions
                 return name;
             }
 
-            var chars = new List<char>(name.Length + 5);
+            var sb = new StringBuilder(name.Length + 5);
 
-            for (int i = 0; i < name.Length; i++)
+            for (int index = 0; index < name.Length; index++)
             {
-                var c = name[i];
+                var c = name[index];
 
                 if (char.IsUpper(c))
                 {
-                    if (i > 0)
+                    if (index > 0)
                     {
-                        chars.Add('-');
+                        sb.Append('-');
                     }
 
-                    chars.Add(char.ToLowerInvariant(c));
+                    sb.Append(char.ToLowerInvariant(c));
                 }
                 else
                 {
-                    chars.Add(c);
+                    sb.Append(c);
                 }
             }
 
-            return new string(chars.ToArray());
+            return sb.ToString();
         }
     }
 }
