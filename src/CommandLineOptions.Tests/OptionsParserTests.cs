@@ -89,16 +89,21 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
         }
 
-        // [TestMethod]
-        // public void OptionsParser_Parse_SetsEnumProperty()
-        // {
-        //     var args = new[] { "--color", "Blue" };
-        //     var test = ConstructTestObject();
+        [TestMethod]
+        public void OptionsParser_Parse_SetsEnumProperty()
+        {
+            var args = new[] { "--color", "Blue" };
+            var test = ConstructTestObject();
 
-        //     var actual = test.Parse<TestSimpleSettings>(args);
+            var actual = test.Parse<TestSimpleSettings>(args);
 
-        //     Assert.AreEqual(TestEnum.Blue, actual.Color);
-        // }
+            Assert.AreEqual(TestEnum.Blue, actual.Color);
+            // Defaults are preseved
+            Assert.AreEqual(0, actual.Count);
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual(0L, actual.BigCount);
+            Assert.AreEqual("Default", actual.Name);
+        }
 
         [TestMethod]
         public void OptionsParser_Parse_UsesDefaultsWhenNoArgs()
@@ -146,7 +151,7 @@ namespace CommandLineOptions.Tests
         {
             var props = typeof(TestSimpleSettings).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
-            Assert.AreEqual(5, props.Length, "Expected 5 public instance properties on TestSimpleSettings.");
+            Assert.AreEqual(6, props.Length, "Expected 6 public instance properties on TestSimpleSettings.");
         }
 
         //----==== PRIVATE ====--------------------------------------------------------------------
