@@ -31,6 +31,7 @@ namespace CommandLineOptions.Tests
             Assert.IsTrue(aliases.Contains("--color") || aliases.Contains("color"), $"Missing --color, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--count") || aliases.Contains("count"), $"Missing --count, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--enabled") || aliases.Contains("enabled"), $"Missing --enabled, actual aliases: {aliasList}");
+            Assert.IsTrue(aliases.Contains("--key-value") || aliases.Contains("key-value"), $"Missing --key-value, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--name") || aliases.Contains("name"), $"Missing --name, actual aliases: {aliasList}");
             Assert.IsTrue(aliases.Contains("--percent") || aliases.Contains("percent"), $"Missing --percent, actual aliases: {aliasList}");
         }
@@ -50,6 +51,27 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+            Assert.AreEqual(0, actual.KeyValue.Count);
+        }
+
+        [TestMethod]
+        public void OptionsParser_Parse_SetsDictionaryProperty()
+        {
+            var args = new[] { "--key-value", "foo=bar baz=qux" };
+            var parser = ConstructTestObject();
+
+            var actual = parser.Parse<TestSimpleSettings>(args);
+
+            Assert.AreEqual(2, actual.KeyValue.Count);
+            Assert.AreEqual("bar", actual.KeyValue["foo"]);
+            Assert.AreEqual("qux", actual.KeyValue["baz"]);
+            // Defaults are preserved
+            Assert.AreEqual("Default", actual.Name);
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual(0L, actual.BigCount);
+            Assert.AreEqual(0, actual.Percent);
+            Assert.AreEqual(TestEnum.Red, actual.Color);
         }
 
         [TestMethod]
@@ -67,6 +89,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -83,6 +106,7 @@ namespace CommandLineOptions.Tests
             Assert.IsFalse(actual.Enabled);
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual("Default", actual.Name);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -100,6 +124,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -118,6 +143,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -135,6 +161,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -150,6 +177,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
+                        Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -157,7 +185,7 @@ namespace CommandLineOptions.Tests
         {
             var props = typeof(TestSimpleSettings).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
-            Assert.AreEqual(6, props.Length, "Expected 6 public instance properties on TestSimpleSettings.");
+            Assert.AreEqual(7, props.Length, "Expected 7 public instance properties on TestSimpleSettings.");
         }
 
         //----==== PRIVATE ====--------------------------------------------------------------------

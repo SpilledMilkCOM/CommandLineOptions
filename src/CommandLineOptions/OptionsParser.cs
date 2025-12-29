@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -40,6 +41,7 @@ namespace CommandLineOptions
 
         /// <summary>
         /// Parse args into a new instance of <typeparamref name="TSettings"/>.
+        /// Supports Dictionary<string, string> properties for parsing key=value token pairs.
         /// </summary>
         public TSettings Parse<TSettings>(string[] args) where TSettings : new()
         {
@@ -62,9 +64,16 @@ namespace CommandLineOptions
                 {
                     // An option was provided for this property.
 
-                    var parsed = Convert.ChangeType(result.GetValueOrDefault<object>(), descriptor.ValueType, CultureInfo.InvariantCulture);
-
-                    descriptor.Prop.SetValue(instance, parsed);
+                    if (descriptor.ValueType == typeof(Dictionary<string, string>))
+                    {
+                        var dict = ParseTokensIntoDictionary(result.Tokens);
+                        descriptor.Prop.SetValue(instance, dict);
+                    }
+                    else
+                    {
+                        var parsed = Convert.ChangeType(result.GetValueOrDefault<object>(), descriptor.ValueType, CultureInfo.InvariantCulture);
+                        descriptor.Prop.SetValue(instance, parsed);
+                    }
                 }
             }
 
@@ -132,6 +141,11 @@ namespace CommandLineOptions
                 return new Option<double>(primary);
             }
 
+            if (valueType == typeof(Dictionary<string, string>))
+            {
+                return new Option<Dictionary<string, string>>(primary) { AllowMultipleArgumentsPerToken = true };
+            }
+
             // Fallback: bind as string.
             return new Option<string>(primary);
         }
@@ -165,6 +179,30 @@ namespace CommandLineOptions
             }
 
             return sb.ToString();
+        }
+
+        private static Dictionary<string, string> ParseTokensIntoDictionary(IReadOnlyList<Token> tokenList)
+        {
+            var dict = new Dictionary<string, string>();
+
+            // Each Token could be a list of key=value pairs
+
+            foreach (var tokens in tokenList)
+            {
+                var pairs = tokens.Value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var pair in pairs)
+                {
+                    var parts = pair.Split('=', 2);
+                    
+                    if (parts.Length == 2)
+                    {
+                        dict[parts[0].Trim()] = parts[1].Trim();
+                    }
+                }
+            }
+
+            return dict;
         }
     }
 }
