@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ConsoleAppHost;
 using ConsoleAppHost.Tests.Utilities;
 
 namespace ConsoleAppHost.Tests
