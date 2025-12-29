@@ -150,6 +150,39 @@ namespace CommandLineOptions
             return new Option<string>(primary);
         }
 
+        private Dictionary<string, string> ParseTokensIntoDictionary(IReadOnlyList<Token> tokenList)
+        {
+            var dict = new Dictionary<string, string>();
+
+            foreach (var tokens in tokenList)
+            {
+                var pairs = tokens.Value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var pair in pairs)
+                {
+                    var idx = pair.IndexOf('=');
+
+                    if (idx <= 0 || idx == pair.Length - 1)
+                    {
+                        _logger.LogWarning("Ignoring invalid key-value pair with key only: '{Pair}'", pair);
+                        continue;
+                    }
+
+                    var key = pair.Substring(0, idx).Trim();
+                    var value = pair.Substring(idx + 1).Trim();
+
+                    if (key.Length > 0)
+                    {
+                        dict[key] = value;
+                    } else {
+                        _logger.LogWarning("Ignoring invalid key-value pair with empty key: '{Pair}'", pair);
+                    }
+                }
+            }
+
+            return dict;
+        }
+
         private static string ToKebabCase(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -179,30 +212,6 @@ namespace CommandLineOptions
             }
 
             return sb.ToString();
-        }
-
-        private static Dictionary<string, string> ParseTokensIntoDictionary(IReadOnlyList<Token> tokenList)
-        {
-            var dict = new Dictionary<string, string>();
-
-            // Each Token could be a list of key=value pairs
-
-            foreach (var tokens in tokenList)
-            {
-                var pairs = tokens.Value.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var pair in pairs)
-                {
-                    var parts = pair.Split('=', 2);
-                    
-                    if (parts.Length == 2)
-                    {
-                        dict[parts[0].Trim()] = parts[1].Trim();
-                    }
-                }
-            }
-
-            return dict;
         }
     }
 }

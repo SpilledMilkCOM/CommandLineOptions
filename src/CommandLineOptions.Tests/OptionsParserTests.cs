@@ -89,7 +89,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(TestEnum.Red, actual.Color);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace CommandLineOptions.Tests
             Assert.IsFalse(actual.Enabled);
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual("Default", actual.Name);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -124,7 +124,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -161,7 +161,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
@@ -177,7 +177,7 @@ namespace CommandLineOptions.Tests
             Assert.AreEqual(0L, actual.BigCount);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);
-                        Assert.AreEqual(0, actual.KeyValue.Count);
+            Assert.AreEqual(0, actual.KeyValue.Count);
         }
 
         [TestMethod]
