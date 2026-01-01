@@ -37,6 +37,25 @@ namespace CommandLineOptions.Tests
         }
 
         [TestMethod]
+        public void OptionsParser_BuildRootCommand_UsesAttributeMetadata()
+        {
+            var parser = ConstructTestObject();
+            var root = parser.BuildRootCommand<TestSimpleSettings2>();
+
+            var big = root.Children.OfType<Option>().First(o => o.Aliases.Contains("--big-count") || o.Aliases.Contains("big-count"));
+
+            Assert.AreEqual("A big count value", big.Description);
+
+            var aliases = big.Aliases.ToArray();
+
+            var aliasList = string.Join(",", aliases);
+
+            Assert.IsTrue(aliases.Contains("--big-count"), $"aliases: {aliasList}");
+            Assert.IsTrue(aliases.Contains("big-count"), $"aliases: {aliasList}"); // default kebab alias added
+            Assert.IsTrue(aliases.Any(a => a == "-b" || a == "--b" || a == "-big"), $"aliases: {aliasList}");
+        }
+
+        [TestMethod]
         public void OptionsParser_Parse_SetsBoolProperty()
         {
             var args = new[] { "--enabled", "true" };
@@ -137,6 +156,27 @@ namespace CommandLineOptions.Tests
             var actual = test.Parse<TestSimpleSettings>(args);
 
             Assert.AreEqual(value, actual.BigCount);
+            // Defaults are preseved
+            Assert.IsFalse(actual.Enabled);
+            Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual("Default", actual.Name);
+            Assert.AreEqual(0, actual.Percent);
+            Assert.AreEqual(TestEnum.Red, actual.Color);
+            Assert.AreEqual(0, actual.KeyValue.Count);
+        }
+
+        [TestMethod]
+        [DataRow("-b", 9_000_000_000)]
+        [DataRow("-big", 9_000_000_000)]
+        [DataRow("--big-count", 9_000_000_000)]
+        public void OptionsParser_Parse_SetsLongProperty_WithAttribute(string arguments, long expectedValue)
+        {
+            var args = new[] { arguments, expectedValue.ToString() };
+            var test = ConstructTestObject();
+
+            var actual = test.Parse<TestSimpleSettings2>(args);
+
+            Assert.AreEqual(expectedValue, actual.BigCount);
             // Defaults are preseved
             Assert.IsFalse(actual.Enabled);
             Assert.AreEqual(0, actual.Count);

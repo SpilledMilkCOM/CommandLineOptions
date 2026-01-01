@@ -94,10 +94,26 @@ namespace CommandLineOptions
                 }
 
                 var valueType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                var attr = prop.GetCustomAttribute<CommandLineOptionAttribute>();
                 var kebab = ToKebabCase(prop.Name);
-                var option = CreateOptionForType(valueType, kebab);
+
+                var optionName = NormalizeOptionName(attr?.Name ?? "--" + kebab);
+                var option = CreateOptionForType(valueType, optionName, attr?.Description);
 
                 option.Aliases.Add(kebab);
+
+                if (attr?.Aliases is not null)
+                {
+                    foreach (var alias in attr.Aliases)
+                    {
+                        if (string.IsNullOrWhiteSpace(alias))
+                        {
+                            continue;
+                        }
+
+                        option.Aliases.Add(NormalizeOptionName(alias));
+                    }
+                }
 
                 list.Add(new OptionDescriptor(prop, option, valueType));
             }
@@ -107,47 +123,65 @@ namespace CommandLineOptions
             return list;
         }
 
-        private Option CreateOptionForType(Type valueType, string kebabName)
+        private Option CreateOptionForType(Type valueType, string optionName, string? description)
         {
-            var primary = "--" + kebabName;
             if (valueType.IsEnum)
             {
                 var optionType = typeof(Option<>).MakeGenericType(valueType);
-                return (Option)Activator.CreateInstance(optionType, new object[] { primary })!;
+                var created = (Option)Activator.CreateInstance(optionType, new object[] { optionName })!;
+                created.Description = description;
+                return created;
             }
 
             if (valueType == typeof(bool))
             {
-                return new Option<bool>(primary);
+                return new Option<bool>(optionName) { Description = description };
             }
 
             if (valueType == typeof(string))
             {
-                return new Option<string>(primary);
+                return new Option<string>(optionName) { Description = description };
             }
 
             if (valueType == typeof(int))
             {
-                return new Option<int>(primary);
+                return new Option<int>(optionName) { Description = description };
             }
 
             if (valueType == typeof(long))
             {
-                return new Option<long>(primary);
+                return new Option<long>(optionName) { Description = description };
             }
 
             if (valueType == typeof(double))
             {
-                return new Option<double>(primary);
+                return new Option<double>(optionName) { Description = description };
             }
 
             if (valueType == typeof(Dictionary<string, string>))
             {
-                return new Option<Dictionary<string, string>>(primary) { AllowMultipleArgumentsPerToken = true };
+                return new Option<Dictionary<string, string>>(optionName) { AllowMultipleArgumentsPerToken = true, Description = description };
             }
 
             // Fallback: bind as string.
-            return new Option<string>(primary);
+            return new Option<string>(optionName) { Description = description };
+        }
+
+        private static string NormalizeOptionName(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                throw new ArgumentException("Option name cannot be null or whitespace", nameof(raw));
+            }
+
+            var trimmed = raw.Trim();
+
+            if (trimmed.StartsWith('-'))
+            {
+                return trimmed;
+            }
+
+            return "--" + trimmed;
         }
 
         private Dictionary<string, string> ParseTokensIntoDictionary(IReadOnlyList<Token> tokenList)
