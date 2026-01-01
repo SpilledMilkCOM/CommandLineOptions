@@ -1,8 +1,8 @@
-# ⚙️ Command Line Options 🍢
+# ⚙️ Command Line Options
 
 A command line parser that leverages Microsoft's **System.CommandLine** and binds the parsed options to an "`IOptions`" settings class.
 
-🍢 Not using any attributes (parsing defaults to "kebab style" options)
+⤵️ Not using any attributes (parsing defaults to "kebab style" options)
 
 ~~~C#
 public class SampleSettings {
@@ -18,7 +18,7 @@ var loopCount = cmdLineSettings.LoopCount;    // 5
 var message = cmdLineSettings.Message;        // Hello World
 ~~~
 
-Override the default behavior with attributes.
+🔃 Override the default behavior with attributes.
 
 ~~~C#
 public class SampleSettings {
