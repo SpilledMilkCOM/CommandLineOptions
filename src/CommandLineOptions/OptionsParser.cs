@@ -43,39 +43,47 @@ namespace CommandLineOptions
         /// Parse args into a new instance of <typeparamref name="TSettings"/>.
         /// Supports Dictionary<string, string> properties for parsing key=value token pairs.
         /// </summary>
-        public TSettings Parse<TSettings>(string[] args) where TSettings : new()
+        public TSettings? Parse<TSettings>(string[] args, string? description = null) where TSettings : new()
         {
             var descriptors = CreateOptionDescriptors(typeof(TSettings));
-            var root = new RootCommand();
+            var root = description is null ? new RootCommand() : new RootCommand(description);
 
             foreach (var descriptor in descriptors)
             {
                 root.Add(descriptor.Option);
             }
 
-            var instance = new TSettings();
-            var parseResult = root.Parse(args);
+            TSettings? instance = default;
 
-            foreach (var descriptor in descriptors)
+            root.SetAction((parseResult) =>
             {
-                var result = parseResult.GetResult(descriptor.Option);
+                instance = new TSettings();
 
-                if (result is not null)
+                foreach (var descriptor in descriptors)
                 {
-                    // An option was provided for this property.
+                    var result = parseResult.GetResult(descriptor.Option);
 
-                    if (descriptor.ValueType == typeof(Dictionary<string, string>))
+                    if (result is not null)
                     {
-                        var dict = ParseTokensIntoDictionary(result.Tokens);
-                        descriptor.Prop.SetValue(instance, dict);
-                    }
-                    else
-                    {
-                        var parsed = Convert.ChangeType(result.GetValueOrDefault<object>(), descriptor.ValueType, CultureInfo.InvariantCulture);
-                        descriptor.Prop.SetValue(instance, parsed);
+                        // An option was provided for this property.
+
+                        if (descriptor.ValueType == typeof(Dictionary<string, string>))
+                        {
+                            var dict = ParseTokensIntoDictionary(result.Tokens);
+                            descriptor.Prop.SetValue(instance, dict);
+                        }
+                        else
+                        {
+                            var parsed = Convert.ChangeType(result.GetValueOrDefault<object>(), descriptor.ValueType, CultureInfo.InvariantCulture);
+                            descriptor.Prop.SetValue(instance, parsed);
+                        }
                     }
                 }
-            }
+            });
+
+            // Calling Invoke to execute the action and populate the instance. (displays help/version/errors as needed)
+
+            root.Parse(args).Invoke();
 
             return instance;
         }

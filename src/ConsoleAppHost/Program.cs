@@ -11,7 +11,12 @@ var builder = Host.CreateDefaultBuilder(args);
 // Parse command-line arguments
 var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger<OptionsParser>();
 var parser = new OptionsParser(logger);
-var cmdLineSettings = parser.Parse<ApplicationSettings>(args);
+var cmdLineSettings = parser.Parse<ApplicationSettings>(args, "Console Application Host Settings");
+
+if (cmdLineSettings == null)
+{
+    return;
+}
 
 var host = builder
     .ConfigureServices((context, services) =>

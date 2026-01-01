@@ -1,6 +1,44 @@
-# ⚙️ Command Line Options
+# ⚙️ Command Line Options 🍢
 
-A command line parser that leverages Microsoft's **System.CommandLine** and binds the parsed options to an `IOptions` settings class.
+A command line parser that leverages Microsoft's **System.CommandLine** and binds the parsed options to an "`IOptions`" settings class.
+
+🍢 Not using any attributes (parsing defaults to "kebab style" options)
+
+~~~C#
+public class SampleSettings {
+    public int LoopCount { get; set; }
+    public string Message { get; set; }
+}
+
+// sample.exe --loop-count 5 --message 'Hello World'
+
+var cmdLineSettings = parser.Parse<SampleSettings>(args);
+
+var loopCount = cmdLineSettings.LoopCount;    // 5
+var message = cmdLineSettings.Message;        // Hello World
+~~~
+
+Override the default behavior with attributes.
+
+~~~C#
+public class SampleSettings {
+    [CommandLineOption("-c", "Number of iterations to run", "-count", "--loop-count")]
+    public int LoopCount { get; set; }
+    [CommandLineOption("-m", "Message to display", "--message")]
+    public string Message { get; set; }
+}
+
+// sample.exe -c 5 -m 'Hello World'
+
+var cmdLineSettings = parser.Parse<SampleSettings>(args);
+
+var loopCount = cmdLineSettings.LoopCount;    // 5
+var message = cmdLineSettings.Message;        // Hello World
+~~~
+
+⚠️ NOTE: Take a look at the test files:
+* 📄 [TestSimpleSettings.cs](./src/CommandLineOptions.Tests/TestSimpleSettings.cs)
+* 📄 [TestSimpleSettings2.cs](./src/CommandLineOptions.Tests/TestSimpleSettings2.cs)
 
 # 🛠️ Setup
 
@@ -22,25 +60,3 @@ These CI-related tasks are tracked here for visibility and can be used as a quic
 * [ ] Verify workflow runs tests on push/PR
 * [ ] Add status badge to README
 * [ ] Close issue and document CI details
-
-# 🔧 Running the ConsoleAppHost
-
-You can run the console host with configuration coming from `appsettings.json`, environment variables, and command-line arguments. Examples:
-
-* Run with defaults from `appsettings.json`:
-
-  ~~~bash
-  dotnet run --project src/ConsoleAppHost
-  ~~~
-
-* Override settings from the command line:
-
-  ~~~bash
-  dotnet run --project src/ConsoleAppHost -- --ApplicationSettings:Message "Hi from CLI" --ApplicationSettings:Verbose true
-  ~~~
-
-* Or set environment variables (PowerShell example):
-
-  ~~~powershell
-  $Env:ApplicationSettings__Message = 'Hi from Env'; dotnet run --project src/ConsoleAppHost
-  ~~~
