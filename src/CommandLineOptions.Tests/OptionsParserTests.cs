@@ -42,7 +42,7 @@ namespace CommandLineOptions.Tests
             var parser = ConstructTestObject();
             var root = parser.BuildRootCommand<TestSimpleSettings2>();
 
-            var big = root.Children.OfType<Option>().First(o => o.Aliases.Contains("--big-count") || o.Aliases.Contains("big-count"));
+            var big = root.Children.OfType<Option>().First(o => o.Aliases.Contains("--big-count"));
 
             Assert.AreEqual("A big count value", big.Description);
 
@@ -51,8 +51,8 @@ namespace CommandLineOptions.Tests
             var aliasList = string.Join(",", aliases);
 
             Assert.IsTrue(aliases.Contains("--big-count"), $"aliases: {aliasList}");
-            Assert.IsTrue(aliases.Contains("big-count"), $"aliases: {aliasList}"); // default kebab alias added
             Assert.IsTrue(aliases.Any(a => a == "-b" || a == "--b" || a == "-big"), $"aliases: {aliasList}");
+            Assert.IsFalse(aliases.Contains("big-count"), $"Kebab-case should not be auto-added when attribute exists. aliases: {aliasList}");
         }
 
         [TestMethod]
@@ -180,6 +180,7 @@ namespace CommandLineOptions.Tests
             // Defaults are preseved
             Assert.IsFalse(actual.Enabled);
             Assert.AreEqual(0, actual.Count);
+            Assert.AreEqual("Should be ignored", actual.Ignored);
             Assert.AreEqual("Default", actual.Name);
             Assert.AreEqual(0, actual.Percent);
             Assert.AreEqual(TestEnum.Red, actual.Color);

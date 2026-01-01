@@ -2,6 +2,9 @@ namespace CommandLineOptions.Tests
 {
     public class TestSimpleSettings2
     {
+
+        // If a property has CommandLineOptionAttribute, use that to define the option.
+
         [CommandLineOption("-b", "A big count value", "-big", "--big-count")]
         public long BigCount { get; set; }
 
@@ -11,10 +14,13 @@ namespace CommandLineOptions.Tests
 
         public bool Enabled { get; set; }
 
+        [CommandLineIgnore]
+        public string Ignored { get; set; } = "Should be ignored";
+
         public Dictionary<string, string> KeyValue { get; set; } = [];
 
         public string? Name { get; set; } = "Default";
-        
+
         public double Percent { get; set; }
     }
 }

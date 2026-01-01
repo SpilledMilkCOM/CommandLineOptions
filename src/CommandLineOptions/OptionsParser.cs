@@ -93,26 +93,38 @@ namespace CommandLineOptions
                     continue;
                 }
 
+                if (prop.GetCustomAttribute<CommandLineIgnoreAttribute>() is not null)
+                {
+                    continue;
+                }
+
                 var valueType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
                 var attr = prop.GetCustomAttribute<CommandLineOptionAttribute>();
                 var kebab = ToKebabCase(prop.Name);
-
                 var optionName = NormalizeOptionName(attr?.Name ?? "--" + kebab);
                 var option = CreateOptionForType(valueType, optionName);
-                option.Description = attr?.Description;
 
-                option.Aliases.Add(kebab);
-
-                if (attr?.Aliases is not null)
+                if (attr is null)
                 {
-                    foreach (var alias in attr.Aliases)
-                    {
-                        if (string.IsNullOrWhiteSpace(alias))
-                        {
-                            continue;
-                        }
+                    // No attribute: add default kebab-case alias
+                    option.Aliases.Add(kebab);
+                }
+                else
+                {
+                    option.Description = attr.Description;
 
-                        option.Aliases.Add(NormalizeOptionName(alias));
+                    // Attribute exists: only use explicitly defined aliases
+                    if (attr.Aliases is not null)
+                    {
+                        foreach (var alias in attr.Aliases)
+                        {
+                            if (string.IsNullOrWhiteSpace(alias))
+                            {
+                                continue;
+                            }
+
+                            option.Aliases.Add(NormalizeOptionName(alias));
+                        }
                     }
                 }
 
@@ -207,7 +219,9 @@ namespace CommandLineOptions
                     if (key.Length > 0)
                     {
                         dict[key] = value;
-                    } else {
+                    }
+                    else
+                    {
                         _logger.LogWarning("Ignoring invalid key-value pair with empty key: '{Pair}'", pair);
                     }
                 }

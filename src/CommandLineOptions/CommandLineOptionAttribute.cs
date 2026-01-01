@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace CommandLineOptions
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
