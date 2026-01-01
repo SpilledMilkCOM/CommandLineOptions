@@ -98,7 +98,8 @@ namespace CommandLineOptions
                 var kebab = ToKebabCase(prop.Name);
 
                 var optionName = NormalizeOptionName(attr?.Name ?? "--" + kebab);
-                var option = CreateOptionForType(valueType, optionName, attr?.Description);
+                var option = CreateOptionForType(valueType, optionName);
+                option.Description = attr?.Description;
 
                 option.Aliases.Add(kebab);
 
@@ -123,48 +124,46 @@ namespace CommandLineOptions
             return list;
         }
 
-        private Option CreateOptionForType(Type valueType, string optionName, string? description)
+        private Option CreateOptionForType(Type valueType, string optionName)
         {
             if (valueType.IsEnum)
             {
                 var optionType = typeof(Option<>).MakeGenericType(valueType);
-                var created = (Option)Activator.CreateInstance(optionType, new object[] { optionName })!;
-                created.Description = description;
-                return created;
+                return (Option)Activator.CreateInstance(optionType, new object[] { optionName })!;
             }
 
             if (valueType == typeof(bool))
             {
-                return new Option<bool>(optionName) { Description = description };
+                return new Option<bool>(optionName);
             }
 
             if (valueType == typeof(string))
             {
-                return new Option<string>(optionName) { Description = description };
+                return new Option<string>(optionName);
             }
 
             if (valueType == typeof(int))
             {
-                return new Option<int>(optionName) { Description = description };
+                return new Option<int>(optionName);
             }
 
             if (valueType == typeof(long))
             {
-                return new Option<long>(optionName) { Description = description };
+                return new Option<long>(optionName);
             }
 
             if (valueType == typeof(double))
             {
-                return new Option<double>(optionName) { Description = description };
+                return new Option<double>(optionName);
             }
 
             if (valueType == typeof(Dictionary<string, string>))
             {
-                return new Option<Dictionary<string, string>>(optionName) { AllowMultipleArgumentsPerToken = true, Description = description };
+                return new Option<Dictionary<string, string>>(optionName) { AllowMultipleArgumentsPerToken = true };
             }
 
             // Fallback: bind as string.
-            return new Option<string>(optionName) { Description = description };
+            return new Option<string>(optionName);
         }
 
         private static string NormalizeOptionName(string raw)
