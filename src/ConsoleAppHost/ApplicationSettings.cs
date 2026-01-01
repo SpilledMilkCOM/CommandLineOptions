@@ -17,5 +17,29 @@ namespace ConsoleAppHost
 
         [CommandLineOption("-v", "Enable verbose logging", "--verbose")]
         public bool Verbose { get; set; }
+
+        /// <summary>
+        /// Applies command-line overrides to this instance, only if they differ from defaults.
+        /// </summary>
+        /// <param name="commandLineSettings">The settings parsed from command-line arguments.</param>
+        public void ApplyCommandLineOverrides(ApplicationSettings commandLineSettings)
+        {
+            var defaultSettings = new ApplicationSettings();
+
+            if (commandLineSettings.LoopCount != defaultSettings.LoopCount)
+            {
+                LoopCount = commandLineSettings.LoopCount;
+            }
+
+            if (commandLineSettings.Message != defaultSettings.Message)
+            {
+                Message = commandLineSettings.Message;
+            }
+
+            if (commandLineSettings.Verbose != defaultSettings.Verbose)
+            {
+                Verbose = commandLineSettings.Verbose;
+            }
+        }
     }
 }

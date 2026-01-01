@@ -13,12 +13,6 @@ var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger<Op
 var parser = new OptionsParser(logger);
 var cmdLineSettings = parser.Parse<ApplicationSettings>(args);
 
-// Track which properties were set via command line by comparing to defaults
-var defaultSettings = new ApplicationSettings();
-bool loopCountSetViaCommandLine = cmdLineSettings.LoopCount != defaultSettings.LoopCount;
-bool messageSetViaCommandLine = cmdLineSettings.Message != defaultSettings.Message;
-bool verboseSetViaCommandLine = cmdLineSettings.Verbose != defaultSettings.Verbose;
-
 var host = builder
     .ConfigureServices((context, services) =>
     {
@@ -29,18 +23,7 @@ var host = builder
             context.Configuration.GetSection(ApplicationSettings.SECTION_NAME).Bind(settings);
 
             // Override with command-line arguments
-            if (loopCountSetViaCommandLine)
-            {
-                settings.LoopCount = cmdLineSettings.LoopCount;
-            }
-            if (messageSetViaCommandLine)
-            {
-                settings.Message = cmdLineSettings.Message;
-            }
-            if (verboseSetViaCommandLine)
-            {
-                settings.Verbose = cmdLineSettings.Verbose;
-            }
+            settings.ApplyCommandLineOverrides(cmdLineSettings);
         });
 
         services.AddHostedService<ConsoleService>();
