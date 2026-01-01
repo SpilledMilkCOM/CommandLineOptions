@@ -12,7 +12,6 @@ A command line parser that leverages Microsoft's **System.CommandLine** and bind
 
 > **Markdown style:** Use `*` for unordered list markers and `~~~` (tilde fences) for fenced code blocks. These are enforced by `.markdownlint.json` (MD004: `asterisk`, MD048: `tilde`).
 
-
 # 📝 TODO
 
 ## ✅ CI Checklist
