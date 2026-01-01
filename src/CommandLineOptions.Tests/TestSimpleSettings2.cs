@@ -12,6 +12,7 @@ namespace CommandLineOptions.Tests
 
         public int Count { get; set; }
 
+        [CommandLineOption("-e", "Enable the feature", "-en", "--enabled")]
         public bool Enabled { get; set; }
 
         [CommandLineIgnore]
